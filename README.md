@@ -31,14 +31,14 @@ An end-to-end smart parking system: an Arduino sensor node detects whether a par
 
 ```mermaid
 flowchart LR
-    A[Arduino node<br/>distance + metal sensor] -->|HTTP JSON| I[Ingest server<br/>writes JSON files]
-    I -->|SFTP| C[data-collector<br/>Java]
-    C --> DB[(PostgreSQL)]
-    P[analytics_ai_service.py<br/>chart generator] -->|analytics_cache| DB
-    W[web-app<br/>Spring Boot] --> DB
-    W -->|/predict_all| M[model_api.py<br/>FastAPI + Random Forest]
-    M --> WA[weatherapi.com]
-    U[Browser] --> W
+    A["Arduino node<br/>distance + metal sensor"] -->|"HTTP JSON"| I["Ingest server<br/>writes JSON files"]
+    I -->|"SFTP"| C["data-collector<br/>Java"]
+    C --> DB[("PostgreSQL")]
+    P["analytics_ai_service.py<br/>chart generator"] -->|"analytics_cache"| DB
+    W["web-app<br/>Spring Boot"] --> DB
+    W -->|"/predict_all"| M["model_api.py<br/>FastAPI + Random Forest"]
+    M --> WA["weatherapi.com"]
+    U["Browser"] --> W
 ```
 
 The Arduino posts each reading to an ingest endpoint on the project server, which saved it as a JSON file. That small receiver ran on the university server and is not part of this repository. The data collector picks up the newest files over SFTP. The web app reads spots, sensors and readings through JPA, reads the pre-generated charts from `analytics_cache`, and calls the prediction API over HTTP.
