@@ -1,0 +1,14 @@
+# Prediction API (model_api.py)
+fastapi>=0.115
+uvicorn>=0.30
+pydantic>=2.7
+requests>=2.32
+joblib>=1.4
+scikit-learn==1.7.2   # must match the version used to train random_forest_model.pkl
+pandas>=2.2
+
+# Chart generator (analytics_ai_service.py)
+matplotlib>=3.9
+seaborn>=0.13
+numpy>=1.26
+psycopg2-binary>=2.9
