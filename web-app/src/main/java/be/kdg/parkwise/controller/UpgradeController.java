@@ -11,6 +11,6 @@ public class UpgradeController {
     @GetMapping("/subscription/upgrade")
     public String showUpgrade(@RequestParam(required = false) String feature, Model model) {
         model.addAttribute("feature", feature);
-        return "subscriptions/upgrade";
+        return "upgrade";
     }
 }
