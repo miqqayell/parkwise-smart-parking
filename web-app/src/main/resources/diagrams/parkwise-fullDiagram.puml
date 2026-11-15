@@ -1,0 +1,548 @@
+@startuml
+title ParkWise – Full Design Class Diagram
+
+skinparam classAttributeIconSize 0
+
+package "be.kdg.parkwise" {
+
+  ' =========================
+  ' DOMAIN ENTITIES
+  ' =========================
+  package "domain" {
+
+    class ParkingArea <<Entity>> {
+      - Double longitude
+      - boolean active
+      - Long id
+      - String address
+      - Double latitude
+      - String areaName
+      - String areaType
+      - Integer totalCapacity
+      - String areaPostcode
+
+      + setAddress(String) : void
+      + setTotalCapacity(Integer) : void
+      + isActive() : boolean
+      + getLatitude() : Double
+      + getId() : Long
+      + getTotalCapacity() : Integer
+      + setAreaName(String) : void
+      + setAreaType(String) : void
+      + getAddress() : String
+      + setActive(boolean) : void
+      + getAreaPostcode() : String
+      + getLongitude() : Double
+      + getAreaType() : String
+      + getAreaName() : String
+      + setLatitude(Double) : void
+      + setLongitude(Double) : void
+      + setAreaPostcode(String) : void
+    }
+
+    class ParkingSpot <<Entity>> {
+      - Instant lastUpdated
+      - String label
+      - ParkingArea area
+      - boolean operating
+      - Long id
+      - double latitude
+      - double longitude
+      - Integer spotNumber
+      - be.kdg.parkwise.domain.valueobject.ParkingSpotStatus status
+
+      - fillTransientFields() : void
+
+      + getArea() : ParkingArea
+      + getLongitude() : double
+      + setStatus(be.kdg.parkwise.domain.valueobject.ParkingSpotStatus) : void
+      + getLabel() : String
+      + getStatus() : be.kdg.parkwise.domain.valueobject.ParkingSpotStatus
+      + setSpotNumber(Integer) : void
+      + getLatitude() : double
+      + getSpotNumber() : Integer
+      + isOperating() : boolean
+      + getLastUpdated() : Instant
+      + setArea(ParkingArea) : void
+      + setOperating(boolean) : void
+      + getId() : Long
+      + setLastUpdated(Instant) : void
+    }
+
+    class SensorDevice <<Entity>> {
+      - ParkingSpot spot
+      - String sensorType
+      - Long id
+      - String hardwareModel
+      - boolean active
+
+      + setActive(boolean) : void
+      + setSensorType(String) : void
+      + setHardwareModel(String) : void
+      + getId() : Long
+      + setSpot(ParkingSpot) : void
+      + getSpot() : ParkingSpot
+      + getSensorType() : String
+      + getHardwareModel() : String
+      + isActive() : boolean
+    }
+
+    class SensorReading <<Entity>> {
+      - SensorDevice sensor
+      - Instant readingTime
+      - Boolean metalDetected
+      - Boolean occupied
+      - Long id
+      - Integer distanceMm
+
+      + setReadingTime(Instant) : void
+      + getId() : Long
+      + setSensor(SensorDevice) : void
+      + getReadingTime() : Instant
+      + setDistanceMm(Integer) : void
+      + setMetalDetected(Boolean) : void
+      + getDistanceMm() : Integer
+      + getOccupied() : Boolean
+      + getMetalDetected() : Boolean
+      + getSensor() : SensorDevice
+      + setOccupied(Boolean) : void
+    }
+
+    class User <<Entity>> {
+      - String lastName
+      - String firstName
+      - Long id
+      - String email
+      - LocalDateTime createdAt
+      - String password
+
+      + getId() : Long
+      + equals(Object) : boolean
+      + setEmail(String) : void
+      + setFirstName(String) : void
+      + getEmail() : String
+      + setLastName(String) : void
+      + hashCode() : int
+      + getFirstName() : String
+      + setId(Long) : void
+      + setCreatedAt(LocalDateTime) : void
+      + setPassword(String) : void
+      + getLastName() : String
+      + getCreatedAt() : LocalDateTime
+      + getPassword() : String
+    }
+
+    class SubscriptionPlan <<Entity>> {
+      ' id, code, name, price, features, active
+    }
+
+    class UserSubscription <<Entity>> {
+      ' id, user, plan, status, startDate, endDate, locked fields
+    }
+
+    class Car <<Entity>> {
+      ' id, user, brand, model, licensePlate, color, documentPath, timesParked, createdAt, active
+    }
+
+    class Prediction <<Entity>> {
+      ' fields/methods omitted in code; marker entity
+    }
+  }
+
+  ' =========================
+  ' ENUMS & VALUE OBJECTS
+  ' =========================
+  package "domain.valueobject" {
+
+    enum ParkingSpotStatus <<Enumeration>> {
+      UNKNOWN
+      FREE
+      OCCUPIED
+      --
+      + valueOf(String) : ParkingSpotStatus
+      + values() : ParkingSpotStatus[]
+    }
+
+    class Email <<ValueObject>> {
+      - String value
+      - Pattern EMAIL_PATTERN
+      + toString() : String
+      + value() : String
+    }
+
+    class Password <<ValueObject>> {
+      - String hashedValue
+      + validateRawPassword(String) : void
+      + hashedValue() : String
+    }
+
+    class UserProfile <<ValueObject>> {
+      - String firstName
+      - String lastName
+      + getFullName() : String
+      + lastName() : String
+      + firstName() : String
+    }
+
+    class LicensePlate <<ValueObject>> { }
+
+    class LoginRequest <<ValueObject>> {
+      - String email
+      - String password
+    }
+
+    class MeasurementValue <<ValueObject>> { }
+    class Probability <<ValueObject>> { }
+    class TimestampValue <<ValueObject>> { }
+    class SensorDescriptor <<ValueObject>> { }
+  }
+
+  package "domain.Enum" {
+    enum SensorType <<Enumeration>> {
+      values()
+      valueOf()
+    }
+
+    enum SubscriptionType <<Enumeration>> {
+      values()
+      valueOf()
+    }
+
+    enum SubscriptionStatus <<Enumeration>> {
+      ' ACTIVE, CANCELLED, EXPIRED
+    }
+  }
+
+  ' =========================
+  ' DTOs & MAPPERS
+  ' =========================
+  package "dto" {
+    class ParkingSpotDto { }
+    class SensorReadingDto { }
+
+    class SensorUpdateDto {
+      - boolean magneticTriggered
+      - Instant timestamp
+      - Long spotId
+      - double distanceCm
+      + setTimestamp(Instant) : void
+      + getSpotId() : Long
+      + getTimestamp() : Instant
+      + getDistanceCm() : double
+      + setMagneticTriggered(boolean) : void
+      + isMagneticTriggered() : boolean
+      + setSpotId(Long) : void
+      + setDistanceCm(double) : void
+    }
+  }
+
+  package "mapper" {
+    class ParkingMapper { }
+  }
+
+  ' =========================
+  ' REPOSITORIES
+  ' =========================
+  package "repository" {
+
+    interface ParkingAreaRepo <<Repository>> { }
+
+    interface ParkingSpotRepo <<Repository>> { }
+
+    interface SensorRepo <<Repository>> {
+      + findBySpot(ParkingSpot) : Optional
+    }
+
+    interface SensorReadingRepo <<Repository>> {
+      + findFirstBySensorOrderByReadingTimeDesc(SensorDevice) : Optional
+    }
+
+    interface UserRepository <<Repository>> {
+      + existsByEmail(String) : boolean
+      + findByEmail(String) : Optional
+    }
+
+    interface CarRepository <<Repository>> { }
+    interface SubscriptionPlanRepo <<Repository>> { }
+    interface UserSubscriptionRepository <<Repository>> { }
+
+    package "impl" {
+      class ParkingSpotRepoImpl { }
+      class SensorReadingRepoImpl { }
+    }
+  }
+
+  ' =========================
+  ' SERVICES (INTERFACES)
+  ' =========================
+  package "service" {
+
+    interface ParkingService <<Service>> {
+      + getLatestStatus(Long) : ParkingSpotStatus
+      + findById(Long) : Optional
+      + findAll() : Collection
+      + upsert(ParkingSpot) : ParkingSpot
+      + updateStatus(Long, ParkingSpotStatus) : void
+    }
+
+    interface UserService <<Service>> {
+      + registerUser(String, String, String, String) : User
+      + findByEmail(String) : Optional
+      + emailExists(String) : boolean
+      + authenticateUser(String, String) : boolean
+    }
+
+    interface SubscriptionService <<Service>> {
+      + getActivePlans() : List<SubscriptionPlan>
+      + subscribeUserToPlan(userId : Long, planId : Long) : UserSubscription
+      + getActiveSubscriptionForUser(userId : Long) : Optional<UserSubscription>
+      + getEffectivePlanCodeForUser(userId : Long) : SubscriptionType
+      + hasMapAccess(userId : Long) : boolean
+      + hasAnalyticsAccess(userId : Long) : boolean
+      + hasPredictionAccess(userId : Long) : boolean
+      + cancelSubscription(userId : Long) : UserSubscription
+      + changeSubscription(userId : Long, newPlanId : Long) : UserSubscription
+      + canUpgradeTo(userId : Long, planCode : String) : boolean
+      + canDowngradeTo(userId : Long, planCode : String) : boolean
+    }
+
+    interface CarService <<Service>> {
+      + registerCar(userId : Long, brand : String, model : String, licensePlate : String, color : String, document : MultipartFile) : Car
+      + getUserCars(userId : Long) : List<Car>
+      + findById(carId : Long) : Optional<Car>
+      + deleteCar(carId : Long, userId : Long) : void
+      + licensePlateExists(licensePlate : String) : boolean
+    }
+
+    interface PredictionService <<Service>> { }
+
+    interface AIModel <<Interface>> { }
+
+    interface SensorIngestService <<Service>> { }
+  }
+
+  ' =========================
+  ' SERVICE IMPLEMENTATIONS
+  ' =========================
+  package "service.impl" {
+
+    class ParkingServiceImpl <<Service>> {
+      - SensorReadingRepo readingRepo
+      - SensorRepo sensorRepo
+      - EntityManager entityManager
+      - ParkingSpotRepo parkingSpotRepo
+
+      + upsert(ParkingSpot) : ParkingSpot
+      + getLatestStatus(Long) : ParkingSpotStatus
+      + updateStatus(Long, ParkingSpotStatus) : void
+      + findAll() : Collection
+      + findById(Long) : Optional
+    }
+
+    class UserServiceImpl <<Service>> {
+      - UserRepository userRepository
+      - PasswordEncoder passwordEncoder
+
+      + authenticateUser(String, String) : boolean
+      + registerUser(String, String, String, String) : User
+      + findByEmail(String) : Optional
+      + emailExists(String) : boolean
+    }
+
+    class SubscriptionServiceImpl <<Service>> {
+      - SubscriptionPlanRepo subscriptionPlanRepo
+      - UserSubscriptionRepository userSubscriptionRepository
+      - UserRepository userRepository
+    }
+
+    class CarServiceImpl <<Service>> {
+      - CarRepository carRepository
+      - UserRepository userRepository
+    }
+
+    class PredictionServiceImpl <<Service>> { }
+
+    class SensorIngestServiceImpl <<Service>> {
+      - double DISTANCE_THRESHOLD_CM
+      - ParkingService parkingService
+
+      + fuseAndUpdate(Long, boolean, double) : ParkingSpotStatus
+    }
+
+    class RandomForestAIModel <<Service>> { }
+  }
+
+  ' =========================
+  ' CONTROLLERS
+  ' =========================
+  ' Common type stubs used in method signatures
+  class Model
+  class HttpSession
+  class RedirectAttributes
+  class PasswordEncoder
+  class HttpSecurity
+  class SecurityFilterChain
+  class CommandLineRunner
+  interface MultipartFile
+
+  package "controller" {
+
+    class HomeController <<Controller>> {
+      + home() : String
+      + about() : String
+    }
+
+    class DashboardController <<Controller>> {
+      - ParkingService parkingService
+      + search(Model) : String
+    }
+
+    class ParkingController <<Controller>> {
+      - ParkingService parkingService
+      + getAllSpots() : List
+      + getLatestStatuses() : List
+    }
+
+    class AuthController <<Controller>> {
+      - UserService userService
+      + logout(HttpSession) : String
+      + doLogin(String, String, HttpSession, RedirectAttributes) : String
+      + doSignup(String, String, String, String, HttpSession, RedirectAttributes) : String
+    }
+
+    class UserController <<Controller>> {
+      + userPage(HttpSession, Model) : String
+      + addCar(String,String,String,String,MultipartFile,HttpSession,RedirectAttributes) : String
+      + deleteCar(Long,HttpSession,RedirectAttributes) : String
+    }
+
+    class SubscriptionController <<Controller>> {
+      + showSubscriptions(HttpSession, Model) : String
+      + subscribe(Long,HttpSession,RedirectAttributes) : String
+      + cancelSubscription(HttpSession,RedirectAttributes) : String
+      + changeSubscription(Long,HttpSession,RedirectAttributes) : String
+    }
+
+    class PredictionController <<Controller>> { }
+  }
+
+  ' =========================
+  ' CONFIGURATION
+  ' =========================
+  package "config" {
+
+    class SecurityConfig <<Config>> {
+      + passwordEncoder() : PasswordEncoder
+      + filterChain(HttpSecurity) : SecurityFilterChain
+    }
+
+    class DatabaseConfig <<Config>> { }
+
+    class AppRunner <<Config>> {
+      ~ seedDatabase(ParkingAreaRepo, ParkingSpotRepo) : CommandLineRunner
+      - createSpotForArea(ParkingArea, int) : ParkingSpot
+    }
+
+    class GlobalControllerAdvice <<Config>> {
+      + addSubscriptionAttributes(Model, HttpSession) : void
+    }
+  }
+
+  ' =========================
+  ' INTEGRATION
+  ' =========================
+  package "integration" {
+    interface GSMReader <<Interface>> { }
+  }
+
+  package "integration.impl" {
+    class GsmReaderSimImpl { }
+  }
+
+  ' =========================
+  ' ROOT APPLICATION
+  ' =========================
+  class ParkWiseApplication <<Config>> {
+    + main(String[]) : void
+  }
+
+}
+
+' =========================
+' RELATIONSHIPS – DOMAIN
+' =========================
+ParkingArea "1" o-- "0..*" ParkingSpot : spots
+ParkingSpot "1" o-- "0..1" SensorDevice : sensor
+SensorDevice "1" o-- "0..*" SensorReading : readings
+User "1" o-- "0..*" UserSubscription : subscriptions
+UserSubscription "1" o-- "1" SubscriptionPlan : plan
+User "1" o-- "0..*" Car : cars
+ParkingSpot "1" o-- "0..*" Prediction : predictions
+
+Prediction ..> Probability : uses
+Prediction ..> MeasurementValue : uses
+Prediction ..> TimestampValue : uses
+
+User ..> Email : uses
+User ..> Password : uses
+User ..> UserProfile : uses
+
+SensorDevice ..> SensorType : type
+SensorDevice ..> SensorDescriptor : descriptor
+SensorReading ..> MeasurementValue : derived
+
+' =========================
+' RELATIONSHIPS – LAYERING
+' =========================
+
+' repos -> domain
+ParkingAreaRepo --> ParkingArea
+ParkingSpotRepo --> ParkingSpot
+SensorRepo --> SensorDevice
+SensorReadingRepo --> SensorReading
+UserRepository --> User
+CarRepository --> Car
+SubscriptionPlanRepo --> SubscriptionPlan
+UserSubscriptionRepository --> UserSubscription
+
+' service impls -> interfaces
+ParkingServiceImpl ..|> ParkingService
+UserServiceImpl ..|> UserService
+SubscriptionServiceImpl ..|> SubscriptionService
+CarServiceImpl ..|> CarService
+PredictionServiceImpl ..|> PredictionService
+SensorIngestServiceImpl ..|> SensorIngestService
+RandomForestAIModel ..|> AIModel
+
+' service impl deps
+ParkingServiceImpl --> ParkingSpotRepo
+ParkingServiceImpl --> SensorRepo
+ParkingServiceImpl --> SensorReadingRepo
+ParkingServiceImpl --> EntityManager
+
+UserServiceImpl --> UserRepository
+UserServiceImpl --> PasswordEncoder
+
+SubscriptionServiceImpl --> SubscriptionPlanRepo
+SubscriptionServiceImpl --> UserSubscriptionRepository
+SubscriptionServiceImpl --> UserRepository
+PredictionServiceImpl --> ParkingSpotRepo
+PredictionServiceImpl --> AIModel
+SensorIngestServiceImpl --> ParkingService
+
+' controllers -> services
+DashboardController --> ParkingService
+ParkingController --> ParkingService
+AuthController --> UserService
+UserController --> UserService
+PredictionController --> PredictionService
+
+' config & integration
+SecurityConfig --> PasswordEncoder
+SecurityConfig --> SecurityFilterChain
+UserSessionAdvice --> User
+GsmReaderSimImpl ..|> GSMReader
+AppRunner --> ParkingAreaRepo
+AppRunner --> ParkingSpotRepo
+
+@enduml

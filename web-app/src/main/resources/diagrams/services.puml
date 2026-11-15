@@ -1,0 +1,172 @@
+@startuml
+title ParkWise – Service Layer (Compact Square)
+
+skinparam classAttributeIconSize 0
+skinparam nodesep 22
+skinparam ranksep 22
+left to right direction
+
+' -------------------------------------------------------
+' DOMAIN & REPO STUBS
+' -------------------------------------------------------
+package "Domain stubs" {
+  class ParkingSpot <<Entity>>
+  class ParkingSpotStatus <<Enumeration>>
+  class User <<Entity>>
+  class Car <<Entity>>
+  interface MultipartFile
+}
+
+package "Repository stubs" {
+  class ParkingSpotRepo <<Repository>>
+  class SensorRepo <<Repository>>
+  class SensorReadingRepo <<Repository>>
+  class UserRepository <<Repository>>
+  class CarRepository <<Repository>>
+  class SubscriptionPlanRepo <<Repository>>
+  class UserSubscriptionRepository <<Repository>>
+}
+
+class EntityManager
+class PasswordEncoder
+
+' -------------------------------------------------------
+' SERVICE INTERFACES
+' -------------------------------------------------------
+package "Service Interfaces" {
+
+  interface ParkingService <<Service>> {
+    + findAll() : Collection
+    + findById(id : Long) : Optional
+    + upsert(spot : ParkingSpot) : ParkingSpot
+    + updateStatus(id : Long, status : ParkingSpotStatus) : void
+    + getLatestStatus(spotId : Long) : ParkingSpotStatus
+  }
+
+  interface UserService <<Service>> {
+    + registerUser(email : String, pwd : String, firstName : String, lastName : String) : User
+    + findByEmail(email : String) : Optional
+    + emailExists(email : String) : boolean
+    + authenticateUser(email : String, rawPassword : String) : boolean
+  }
+
+  interface SubscriptionService <<Service>> {
+    + getActivePlans() : List<SubscriptionPlan>
+    + subscribeUserToPlan(userId : Long, planId : Long) : UserSubscription
+    + getActiveSubscriptionForUser(userId : Long) : Optional<UserSubscription>
+    + getEffectivePlanCodeForUser(userId : Long) : SubscriptionType
+    + hasMapAccess(userId : Long) : boolean
+    + hasAnalyticsAccess(userId : Long) : boolean
+    + hasPredictionAccess(userId : Long) : boolean
+    + cancelSubscription(userId : Long) : UserSubscription
+    + changeSubscription(userId : Long, newPlanId : Long) : UserSubscription
+    + canUpgradeTo(userId : Long, planCode : String) : boolean
+    + canDowngradeTo(userId : Long, planCode : String) : boolean
+  }
+
+  interface PredictionService <<Service>> { }
+
+  interface AIModel <<Service>> { }
+
+  interface CarService <<Service>> {
+    + registerCar(userId : Long, brand : String, model : String, licensePlate : String, color : String, document : MultipartFile) : Car
+    + getUserCars(userId : Long) : List<Car>
+    + findById(carId : Long) : Optional<Car>
+    + deleteCar(carId : Long, userId : Long) : void
+    + licensePlateExists(licensePlate : String) : boolean
+  }
+
+  interface SensorIngestService <<Service>> {
+    + fuseAndUpdate(spotId : Long, magneticTriggered : boolean, distanceCm : double) : ParkingSpotStatus
+  }
+}
+
+' -------------------------------------------------------
+' SERVICE IMPLEMENTATIONS
+' -------------------------------------------------------
+package "Service Implementations" {
+
+  class ParkingServiceImpl <<Service>> {
+    - parkingSpotRepo : ParkingSpotRepo
+    - sensorRepo : SensorRepo
+    - readingRepo : SensorReadingRepo
+    - entityManager : EntityManager
+
+    + findAll() : Collection
+    + findById(id : Long) : Optional
+    + upsert(spot : ParkingSpot) : ParkingSpot
+    + updateStatus(id : Long, status : ParkingSpotStatus) : void
+    + getLatestStatus(spotId : Long) : ParkingSpotStatus
+  }
+
+  class UserServiceImpl <<Service>> {
+    - userRepository : UserRepository
+    - passwordEncoder : PasswordEncoder
+
+    + registerUser(email : String, pwd : String, firstName : String, lastName : String) : User
+    + authenticateUser(email : String, rawPassword : String) : boolean
+    + findByEmail(email : String) : Optional
+    + emailExists(email : String) : boolean
+  }
+
+  class SubscriptionServiceImpl <<Service>> {
+    - subscriptionPlanRepository : SubscriptionPlanRepo
+    - userSubscriptionRepository : UserSubscriptionRepository
+    - userRepository : UserRepository
+  }
+
+  class PredictionServiceImpl <<Service>> {
+    - aiModel : AIModel
+    - parkingSpotRepo : ParkingSpotRepo
+  }
+
+  class SensorIngestServiceImpl <<Service>> {
+    - DISTANCE_THRESHOLD_CM : double
+    - parkingService : ParkingService
+
+    + fuseAndUpdate(spotId : Long, magneticTriggered : boolean, distanceCm : double) : ParkingSpotStatus
+  }
+
+  class RandomForestAIModel <<Service>> { }
+
+class CarServiceImpl <<Service>> {
+  - carRepository : CarRepository
+  - userRepository : UserRepository
+}
+}
+
+' -------------------------------------------------------
+' RELATIONSHIPS – interfaces / impls
+' -------------------------------------------------------
+ParkingService <|.. ParkingServiceImpl
+UserService <|.. UserServiceImpl
+SubscriptionService <|.. SubscriptionServiceImpl
+CarService <|.. CarServiceImpl
+PredictionService <|.. PredictionServiceImpl
+SensorIngestService <|.. SensorIngestServiceImpl
+AIModel <|.. RandomForestAIModel
+
+' -------------------------------------------------------
+' RELATIONSHIPS – dependencies
+' -------------------------------------------------------
+ParkingServiceImpl --> ParkingSpotRepo
+ParkingServiceImpl --> SensorRepo
+ParkingServiceImpl --> SensorReadingRepo
+ParkingServiceImpl --> EntityManager
+
+UserServiceImpl --> UserRepository
+UserServiceImpl --> PasswordEncoder
+
+SubscriptionServiceImpl --> SubscriptionPlanRepo
+SubscriptionServiceImpl --> UserSubscriptionRepository
+SubscriptionServiceImpl --> UserRepository
+
+CarServiceImpl --> CarRepository
+CarServiceImpl --> UserRepository
+
+PredictionServiceImpl --> ParkingSpotRepo
+PredictionServiceImpl --> AIModel
+
+SensorIngestServiceImpl --> ParkingService
+
+@enduml

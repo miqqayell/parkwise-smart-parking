@@ -1,0 +1,141 @@
+@startuml
+title ParkWise – Controllers + Config + Integration (Compact Square)
+
+skinparam classAttributeIconSize 0
+skinparam nodesep 20
+skinparam ranksep 20
+left to right direction
+
+' -------------------------------------------------------------------
+' SERVICE STUBS (just enough to show connections)
+' -------------------------------------------------------------------
+class ParkingService <<Service>>
+class UserService <<Service>>
+class PredictionService <<Service>>
+class CarService <<Service>>
+class SubscriptionService <<Service>>
+
+class Model
+class HttpSession
+class RedirectAttributes
+class PasswordEncoder
+class HttpSecurity
+class SecurityFilterChain
+class CommandLineRunner
+class User
+class ParkingAreaRepo <<Repository>>
+class ParkingSpotRepo <<Repository>>
+
+' -------------------------------------------------------------------
+' CONTROLLERS (arranged horizontally)
+' -------------------------------------------------------------------
+package "Controllers" {
+
+  class HomeController <<Controller>> {
+    + home() : String
+    + about() : String
+  }
+
+  class DashboardController <<Controller>> {
+    - parkingService : ParkingService
+    + search(Model) : String
+  }
+
+  class ParkingController <<Controller>> {
+    - parkingService : ParkingService
+    + getAllSpots() : List
+    + getLatestStatuses() : List
+  }
+
+  class AuthController <<Controller>> {
+    - userService : UserService
+    + doLogin(String,String,HttpSession,RedirectAttributes) : String
+    + doSignup(String,String,String,String,HttpSession,RedirectAttributes) : String
+    + logout(HttpSession) : String
+  }
+
+  class UserController <<Controller>> {
+    + userPage(HttpSession, Model) : String
+    + addCar(String,String,String,String,MultipartFile,HttpSession,RedirectAttributes) : String
+    + deleteCar(Long,HttpSession,RedirectAttributes) : String
+  }
+
+  class SubscriptionController <<Controller>> {
+    + showSubscriptions(HttpSession, Model) : String
+    + subscribe(Long,HttpSession,RedirectAttributes) : String
+    + cancelSubscription(HttpSession,RedirectAttributes) : String
+    + changeSubscription(Long,HttpSession,RedirectAttributes) : String
+  }
+
+  class PredictionController <<Controller>> {
+    - predictionService : PredictionService
+  }
+}
+
+' -------------------------------------------------------------------
+' CONFIG PACKAGE (placed beside controllers)
+' -------------------------------------------------------------------
+package "Config" {
+
+  class SecurityConfig <<Config>> {
+    + passwordEncoder() : PasswordEncoder
+    + filterChain(HttpSecurity) : SecurityFilterChain
+  }
+
+  class DatabaseConfig <<Config>> { }
+
+  class AppRunner <<Config>> {
+    ~ seedDatabase(ParkingAreaRepo,ParkingSpotRepo) : CommandLineRunner
+  }
+
+  class GlobalControllerAdvice <<Config>> {
+    + addSubscriptionAttributes(Model, HttpSession) : void
+  }
+
+  class UserSessionView {
+    - user : User
+  }
+}
+
+' -------------------------------------------------------------------
+' INTEGRATION PACKAGE (to the right)
+' -------------------------------------------------------------------
+package "Integration" {
+  interface GSMReader <<Interface>> { }
+}
+
+package "Integration Impl" {
+  class GsmReaderSimImpl { }
+}
+
+' -------------------------------------------------------------------
+' APPLICATION ROOT
+' -------------------------------------------------------------------
+class ParkWiseApplication <<Config>> {
+  + main(String[]) : void
+}
+
+' -------------------------------------------------------------------
+' RELATIONSHIPS
+' -------------------------------------------------------------------
+DashboardController --> ParkingService
+ParkingController --> ParkingService
+
+AuthController --> UserService
+UserController --> CarService
+UserController --> SubscriptionService
+SubscriptionController --> SubscriptionService
+
+PredictionController --> PredictionService
+
+SecurityConfig --> PasswordEncoder
+SecurityConfig --> SecurityFilterChain
+
+GlobalControllerAdvice --> SubscriptionService
+
+GsmReaderSimImpl ..|> GSMReader
+
+AppRunner --> ParkingAreaRepo
+AppRunner --> ParkingSpotRepo
+
+@enduml

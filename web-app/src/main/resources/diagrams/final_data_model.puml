@@ -1,0 +1,204 @@
+@startuml
+hide circle
+skinparam linetype ortho
+
+' =======================
+' USERS
+' =======================
+entity users {
+  + user_id : bigint <<PK>>
+  --
+  email : varchar <<unique>>
+  password_hash : varchar
+  first_name : varchar
+  last_name : varchar
+  phone_number : varchar
+  role : varchar
+  is_active : boolean
+  created_at : timestamptz
+  last_login : timestamptz
+}
+
+note right of users
+"user_id is the primary identifier.
+Secondary identity column omitted
+from diagram for clarity."
+end note
+
+' =======================
+' SUBSCRIPTIONS
+' =======================
+entity subscription_plans {
+  + plan_id : bigint <<PK>>
+  --
+  plan_name : varchar
+  plan_code : varchar <<unique>>
+  monthly_price : numeric
+  description : varchar
+  is_active : boolean
+  has_analytics : boolean
+  has_prediction : boolean
+}
+
+entity user_subscription {
+  + user_subscription_id : bigint <<PK>>
+  --
+  user_id : bigint <<FK>>
+  plan_id : bigint <<FK>>
+  status : SubscriptionStatus
+  start_date : timestamp
+  end_date : timestamp
+  locked_price : numeric
+  locked_plan_name : varchar
+  locked_plan_code : varchar
+  has_analytics : boolean
+  has_prediction : boolean
+}
+
+users ||--o{ user_subscription : subscribes
+subscription_plans ||--o{ user_subscription : snapshot
+
+' =======================
+' PARKING STRUCTURE
+' =======================
+entity parking_areas {
+  + area_id : bigint <<PK>>
+  --
+  area_name : varchar
+  area_postcode : varchar
+  latitude : double
+  longitude : double
+  address : varchar
+  total_capacity : int
+  area_type : varchar
+  is_active : boolean
+}
+
+entity parking_spots {
+  + spot_id : bigint <<PK>>
+  --
+  spot_number : int
+  is_operating : boolean
+}
+
+parking_areas ||--o{ parking_spots : contains
+note on link
+ON DELETE CASCADE
+end note
+
+entity sensors {
+  + sensor_id : bigint <<PK>>
+  --
+  spot_id : bigint <<FK>>
+  sensor_type : varchar
+  hardware_model : varchar
+  is_active : boolean
+  installed_at : timestamptz
+}
+
+parking_spots ||--o{ sensors : equipped_with
+note on link
+ON DELETE CASCADE
+end note
+
+entity sensor_readings {
+  + reading_id : bigint <<PK>>
+  --
+  sensor_id : bigint <<FK>>
+  reading_time : timestamptz
+  distance_mm : int
+  metal_detected : boolean
+  occupied : boolean
+}
+
+sensors ||--o{ sensor_readings : produces
+note on link
+ON DELETE CASCADE
+end note
+
+' =======================
+' ALERTS & LOGS
+' =======================
+entity sensor_alerts {
+  + alert_id : bigint <<PK>>
+  --
+  sensor_id : bigint <<FK>>
+  alert_time : timestamptz
+  last_reading_time : timestamptz
+  minutes_inactive : int
+  alert_message : text
+  is_resolved : boolean
+  resolved_at : timestamptz
+  resolved_by : bigint <<FK>>
+  resolution_notes : text
+  created_at : timestamptz
+}
+
+sensors ||--o{ sensor_alerts : triggers
+users }o--|| sensor_alerts : resolves
+note on link
+ON DELETE SET NULL
+end note
+
+entity system_logs {
+  + log_id : bigint <<PK>>
+  --
+  log_level : LogLevel
+  log_category : varchar
+  message : text
+  details : text
+  source_class : varchar
+  source_method : varchar
+  sensor_id : bigint <<FK>>
+  spot_id : bigint <<FK>>
+  created_at : timestamptz
+  user_email : varchar
+}
+
+sensors }o--|| system_logs : sensor_ref
+parking_spots }o--|| system_logs : spot_ref
+
+' =======================
+' CARS
+' =======================
+entity cars {
+  + car_id : bigint <<PK>>
+  --
+  user_id : bigint <<FK>>
+  brand : varchar
+  model : varchar
+  color : varchar
+  license_plate : varchar <<unique>>
+  document_path : varchar
+  times_parked : int
+  is_active : boolean
+  created_at : timestamptz
+}
+
+users ||--o{ cars : owns
+
+' =======================
+' NOTIFICATIONS
+' =======================
+entity user_notifications {
+  + notification_id : bigint <<PK>>
+  --
+  user_id : bigint <<FK>>
+  notification_type : varchar
+  title : varchar
+  message : text
+  related_sensor_id : bigint <<FK>>
+  related_alert_id : bigint <<FK>>
+  status : NotificationStatus
+  priority : NotificationPriority
+  created_at : timestamptz
+  read_at : timestamptz
+  dismissed_at : timestamptz
+}
+
+users ||--o{ user_notifications : receives
+sensors }o--|| user_notifications : related_sensor
+sensor_alerts }o--|| user_notifications : related_alert
+
+
+@enduml

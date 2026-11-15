@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('My Profile – ParkWise')}"></head>
+<body>
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-shell container fade-in">
+
+    <!-- Success/Error Alerts -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column: User Info & Subscription -->
+        <div class="col-lg-4">
+            <!-- User Profile Card -->
+            <div class="profile-card fade-in">
+                <div class="profile-header">
+                    <div class="profile-avatar-wrapper">
+                        <img th:src="${user.avatarUrl}" class="profile-avatar" alt="User Avatar">
+                        <div class="profile-status-dot"></div>
+                    </div>
+                    <h3 class="profile-name" th:text="${user.firstName + ' ' + user.lastName}">John Doe</h3>
+                    <p class="profile-email" th:text="${user.email}">john@example.com</p>
+                    <span class="badge badge-member">
+                        <i class="bi bi-star-fill me-1"></i>ParkWise Member
+                    </span>
+                </div>
+            </div>
+
+            <!-- Subscription Card -->
+            <div class="subscription-card fade-in mt-4" style="animation-delay: 0.1s">
+                <div class="card-header-custom">
+                    <i class="bi bi-credit-card-fill me-2"></i>
+                    <h5 class="mb-0">My Subscription</h5>
+                </div>
+
+                <div th:if="${subscription != null}" class="subscription-details">
+                    <div class="subscription-plan-badge">
+                        <span class="plan-name" th:text="${subscription.lockedPlanName}">Premium</span>
+                        <span class="plan-price">€<span th:text="${subscription.lockedPrice}">6.00</span>/mo</span>
+                    </div>
+
+                    <div class="subscription-info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Status</span>
+                            <span class="badge bg-success" th:text="${subscription.status}">ACTIVE</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Member Since</span>
+                            <span class="info-value" th:text="${#temporals.format(subscription.startDate, 'dd MMM yyyy')}">01 Jan 2025</span>
+                        </div>
+                    </div>
+
+                    <a href="/subscriptions" class="btn btn-outline-light w-100 mt-3">
+                        <i class="bi bi-box-arrow-up-right me-2"></i>Manage Subscription
+                    </a>
+                </div>
+
+                <div th:if="${subscription == null}" class="subscription-empty">
+                    <div class="empty-icon">
+                        <i class="bi bi-inbox"></i>
+                    </div>
+                    <p class="empty-text">You don't have an active subscription yet.</p>
+                    <a href="/subscriptions" class="btn btn-primary w-100">
+                        <i class="bi bi-star-fill me-2"></i>View Plans
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Cars & History -->
+        <div class="col-lg-8">
+            <!-- Cars Section -->
+            <div class="data-card fade-in" style="animation-delay: 0.2s">
+                <div class="data-card-header">
+                    <div>
+                        <h5 class="mb-1"><i class="bi bi-car-front-fill me-2"></i>My Cars</h5>
+                        <p class="text-light opacity-75 small mb-0">Manage your registered vehicles</p>
+                    </div>
+                    <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addCarModal">
+                        <i class="bi bi-plus-lg me-1"></i>Add Car
+                    </button>
+                </div>
+
+                <div th:if="${#lists.isEmpty(cars)}" class="empty-state">
+                    <i class="bi bi-car-front empty-state-icon"></i>
+                    <p class="empty-state-text">No cars registered yet.</p>
+                    <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#addCarModal">
+                        Register your first car
+                    </button>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(cars)}" class="table-responsive">
+                    <table class="table-modern-dark">
+                        <thead>
+                        <tr>
+                            <th>Vehicle</th>
+                            <th>License Plate</th>
+                            <th>Color</th>
+                            <th class="text-center">Times Parked</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="car : ${cars}">
+                            <td>
+                                <div class="car-info">
+                                    <i class="bi bi-car-front-fill text-primary me-2"></i>
+                                    <span th:text="${car.brand + ' ' + car.model}">BMW 320d</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="license-plate-badge" th:text="${car.licensePlate}">1-ABC-123</span>
+                            </td>
+                            <td class="text-light" th:text="${car.color}">Black</td>
+                            <td class="text-center">
+                                <span class="parking-count" th:text="${car.timesParked}">12</span>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-danger"
+                                        th:attr="data-car-id=${car.id}, data-car-name='${car.brand} ${car.model}'"
+                                        onclick="confirmDeleteCar(this)"
+                                        title="Remove car">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Parking History Section -->
+            <div class="data-card fade-in mt-4" style="animation-delay: 0.3s">
+                <div class="data-card-header">
+                    <div>
+                        <h5 class="mb-1"><i class="bi bi-clock-history me-2"></i>Parking History</h5>
+                        <p class="text-light opacity-75 small mb-0">Your recent parking sessions</p>
+                    </div>
+                </div>
+
+                <div th:if="${#lists.isEmpty(lastParkings)}" class="empty-state">
+                    <i class="bi bi-clock-history empty-state-icon"></i>
+                    <p class="empty-state-text">No parking history yet.</p>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(lastParkings)}" class="table-responsive">
+                    <table class="table-modern-dark">
+                        <thead>
+                        <tr>
+                            <th>Location</th>
+                            <th>Spot</th>
+                            <th>Parked At</th>
+                            <th>Duration</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="p : ${lastParkings}">
+                            <td>
+                                <div class="location-info">
+                                    <i class="bi bi-geo-alt-fill text-success me-2"></i>
+                                    <span th:text="${p.areaName}">Campus Zuid</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="spot-badge" th:text="${p.spotLabel}">Z-12</span>
+                            </td>
+                            <td class="text-light" th:text="${#temporals.format(p.parkedAt, 'dd MMM yyyy HH:mm')}">
+                                12 Mar 2025 15:30
+                            </td>
+                            <td>
+                                <span class="duration-badge" th:text="${p.durationMinutes + ' min'}">45 min</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ADD CAR MODAL -->
+<div class="modal fade" id="addCarModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 bg-primary text-white">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-car-front-fill me-2"></i>Register a New Car
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body p-4">
+                <form th:action="@{/user/add-car}" method="post" enctype="multipart/form-data">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-tag-fill me-1 text-primary"></i>Brand
+                            </label>
+                            <input type="text" name="brand" class="form-control" placeholder="e.g., BMW" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-info-circle-fill me-1 text-primary"></i>Model
+                            </label>
+                            <input type="text" name="model" class="form-control" placeholder="e.g., 320d" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-credit-card-fill me-1 text-primary"></i>License Plate
+                            </label>
+                            <input type="text" name="licensePlate" class="form-control"
+                                   placeholder="e.g., 1-ABC-123" required
+                                   style="text-transform: uppercase;">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-palette-fill me-1 text-primary"></i>Color
+                            </label>
+                            <input type="text" name="color" class="form-control" placeholder="e.g., Black" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-file-earmark-pdf-fill me-1 text-primary"></i>Ownership Documents
+                            </label>
+                            <input type="file" name="document" class="form-control" accept=".pdf,.jpg,.png,.jpeg">
+                            <small class="text-muted">Upload PDF or image (optional)</small>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary w-100 btn-lg">
+                            <i class="bi bi-plus-circle-fill me-2"></i>Add Car
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/nav :: modals}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function confirmDeleteCar(button) {
+        const carId = button.getAttribute('data-car-id');
+        const carName = button.getAttribute('data-car-name');
+
+        if (confirm('Are you sure you want to remove ' + carName + ' from your account?')) {
+            // Create and submit form
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/user/delete-car/' + carId;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+</script>
+
+</body>
+</html>

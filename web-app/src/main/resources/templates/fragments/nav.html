@@ -1,0 +1,228 @@
+<nav th:fragment="nav" class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container px-4">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/home">
+            <img th:src="@{/img/logo.png}" alt="ParkWise" height="32" class="d-inline-block align-text-top">
+            <span class="fw-bold tracking-tight">ParkWise</span>
+        </a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav mx-auto mb-2 mb-lg-0 fw-medium">
+                <!-- Home - Always visible -->
+                <li class="nav-item">
+                    <a class="nav-link px-3" href="/home">Home</a>
+                </li>
+
+                <!-- Real-time Map - Visible if user has ANY subscription -->
+                <li class="nav-item" th:if="${currentUser != null && hasMapAccess}">
+                    <a class="nav-link px-3" href="/search">
+                        <i class="bi bi-map me-1"></i>Real-time Map
+                    </a>
+                </li>
+
+                <!-- Analytics - Visible only for Premium or Ultra -->
+                <li class="nav-item" th:if="${currentUser != null && hasAnalyticsAccess}">
+                    <a class="nav-link px-3" href="/analytics">
+                        <i class="bi bi-graph-up-arrow me-1"></i>Analytics
+                    </a>
+                </li>
+
+                <!-- Predictions - Visible only for Ultra -->
+                <li class="nav-item" th:if="${currentUser != null && hasPredictionAccess}">
+                    <a class="nav-link px-3" href="/prediction">
+                        <i class="bi bi-stars me-1"></i>AI Predictions
+                    </a>
+                </li>
+
+                <!-- Subscriptions - Always visible -->
+                <li class="nav-item">
+                    <a class="nav-link px-3" href="/subscriptions">Subscriptions</a>
+                </li>
+
+                <!-- About - Always visible -->
+                <li class="nav-item">
+                    <a class="nav-link px-3" href="/about">About</a>
+                </li>
+            </ul>
+
+            <!-- User Menu / Auth Buttons -->
+            <div class="d-flex align-items-center gap-3">
+                <!-- Not Logged In -->
+                <div th:if="${currentUser == null}" class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-secondary border-0"
+                            data-bs-toggle="modal"
+                            data-bs-target="#loginModal">
+                        Log in
+                    </button>
+                    <button class="btn btn-sm btn-primary px-4 rounded-pill shadow-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#signupModal">
+                        Sign up
+                    </button>
+                </div>
+
+                <!-- Logged In -->
+                <div th:if="${currentUser != null}" class="d-flex align-items-center gap-3">
+                    <!-- Notification Bell -->
+                    <div th:replace="~{fragments/notification-bell :: notification-bell}"></div>
+
+                    <!-- User Dropdown -->
+                    <div class="dropdown">
+                    <button class="user-toggle d-flex align-items-center dropdown-toggle text-decoration-none"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <img th:src="${currentUser.avatarUrl}"
+                             class="rounded-circle border border-2 border-primary"
+                             style="width: 32px; height: 32px; object-fit: cover;">
+                        <span class="ms-2 small fw-semibold text-light" th:text="${currentUser.firstName}">User</span>
+
+                        <!-- Subscription Badge -->
+                        <span th:if="${userPlanType != 'NONE'}"
+                              class="ms-2 badge rounded-pill"
+                              th:classappend="${userPlanType == 'BASIC'} ? 'bg-primary' : (${userPlanType == 'PREMIUM'} ? 'bg-success' : 'bg-gradient-ultra')"
+                              th:text="${userPlanType}"
+                              style="font-size: 0.65rem; padding: 0.25rem 0.5rem;">
+                            ULTRA
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2">
+                        <li><a class="dropdown-item py-2" href="/user">
+                            <i class="bi bi-person me-2"></i>Profile
+                        </a></li>
+
+                        <!-- Show current plan in dropdown -->
+                        <li th:if="${userPlanType != 'NONE'}">
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li th:if="${userPlanType != 'NONE'}">
+                            <div class="px-3 py-2 text-muted small">
+                                <i class="bi bi-star-fill me-1"></i>
+                                <span th:text="${userPlanType + ' Plan'}">Plan</span>
+                            </div>
+                        </li>
+
+                        <!-- Admin/Dev links -->
+                        <li><hr class="dropdown-divider"></li>
+
+                        <!-- Show Logs link for developer and system_admin -->
+                        <li th:if="${session.userRole == 'developer' || session.userRole == 'system_admin'}">
+                            <a class="dropdown-item" href="/developer/logs">
+                                Logs
+                            </a>
+                        </li>
+
+                        <!-- Show Monitoring link only for system_admin -->
+                        <li th:if="${session.userRole == 'system_admin'}">
+                            <a class="dropdown-item" href="/admin/monitoring">
+                                Monitoring
+                            </a>
+                        </li>
+
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post" class="m-0">
+                                <button type="submit" class="dropdown-item py-2 text-danger">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Log out
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- AUTH MODALS FRAGMENT -->
+<div th:fragment="modals">
+    <!-- LOGIN MODAL -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg position-relative overflow-hidden">
+                <div class="position-absolute top-0 start-0 w-100 bg-success" style="height: 6px;"></div>
+
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold text-dark">Welcome Back</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4 pt-2">
+                    <p class="text-muted small mb-4">Enter your details to access your parking dashboard.</p>
+
+                    <div th:if="${loginError}" class="alert alert-danger py-2 small" role="alert">
+                        <i class="bi bi-exclamation-circle me-1"></i> <span th:text="${loginError}"></span>
+                    </div>
+
+                    <form th:action="@{/login}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary text-uppercase">Email</label>
+                            <input name="email" class="form-control bg-light border-0 py-2" type="email" placeholder="name@example.com" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-secondary text-uppercase">Password</label>
+                            <input name="password" class="form-control bg-light border-0 py-2" type="password" placeholder="••••••••" required>
+                        </div>
+                        <button class="btn btn-primary w-100 py-2 fw-bold" type="submit">Log in</button>
+                    </form>
+                </div>
+                <div class="modal-footer justify-content-center border-0 bg-light py-3">
+                    <small class="text-muted">New here? <a href="#" data-bs-toggle="modal" data-bs-target="#signupModal" data-bs-dismiss="modal" class="text-decoration-none fw-bold">Create account</a></small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SIGNUP MODAL -->
+    <div class="modal fade" id="signupModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg position-relative overflow-hidden">
+                <div class="position-absolute top-0 start-0 w-100 bg-primary" style="height: 6px;"></div>
+
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold text-dark">Create Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4 pt-2">
+                    <p class="text-muted small mb-4">Join ParkWise and start finding parking smarter.</p>
+
+                    <div th:if="${signupError}" class="alert alert-danger py-2 small" role="alert">
+                        <i class="bi bi-exclamation-circle me-1"></i> <span th:text="${signupError}"></span>
+                    </div>
+
+                    <form th:action="@{/signup}" method="post">
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-secondary">First Name</label>
+                                <input name="firstName" class="form-control bg-light border-0" placeholder="Joe" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-secondary">Last Name</label>
+                                <input name="lastName" class="form-control bg-light border-0" placeholder="Mama" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Email</label>
+                            <input name="email" type="email" class="form-control bg-light border-0" placeholder="name@example.com" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-secondary">Password</label>
+                            <input name="password" type="password" class="form-control bg-light border-0" placeholder="Min. 6 characters" required minlength="6">
+                            <small class="text-muted">Must be at least 6 characters long</small>
+                        </div>
+                        <button class="btn btn-primary w-100 py-2 fw-bold" type="submit">Get Started</button>
+                    </form>
+                </div>
+                <div class="modal-footer justify-content-center border-0 bg-light py-3">
+                    <small class="text-muted">Already have an account? <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal" class="text-decoration-none fw-bold">Log in</a></small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION BELL JAVASCRIPT -->
+    <script th:src="@{/js/notifications.js}"></script>
+</div>

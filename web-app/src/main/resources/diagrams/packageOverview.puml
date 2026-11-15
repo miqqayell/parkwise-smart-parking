@@ -1,0 +1,43 @@
+@startuml
+title ParkWise – Package Overview
+
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+package "be.kdg.parkwise" {
+
+  package "controller" as Controllers
+  package "service" as Services
+  package "service.impl" as ServiceImpls
+  package "repository" as Repositories
+  package "domain" as Domain
+  package "domain.valueobject" as ValueObjects
+  package "domain.Enum" as Enums
+  package "dto" as DTOs
+  package "mapper" as Mapper
+  package "config" as Config
+  package "integration" as Integration
+  package "integration.impl" as IntegrationImpl
+}
+
+Controllers --> Services
+ServiceImpls ..> Services
+Services --> Repositories
+Repositories --> Domain
+Domain --> ValueObjects
+Domain --> Enums
+Services --> Domain
+
+IntegrationImpl ..> Integration
+Integration --> Services
+
+Config --> Controllers
+Config --> Services
+Config --> Repositories
+Config --> Domain
+
+DTOs --> Controllers
+Mapper --> DTOs
+Mapper --> Domain
+
+@enduml

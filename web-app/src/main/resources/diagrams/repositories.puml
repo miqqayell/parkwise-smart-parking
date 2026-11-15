@@ -1,0 +1,92 @@
+@startuml
+title ParkWise – Repository Layer (Compact Square)
+
+skinparam classAttributeIconSize 0
+skinparam nodesep 20
+skinparam ranksep 20
+left to right direction
+
+' -------------------------------------------------------
+' DOMAIN STUBS (just for relationships)
+' -------------------------------------------------------
+package "Domain (stubs)" {
+  class ParkingArea <<Entity>>
+  class ParkingSpot <<Entity>>
+  class SensorDevice <<Entity>>
+  class SensorReading <<Entity>>
+  class User <<Entity>>
+  class Car <<Entity>>
+  class SubscriptionPlan <<Entity>>
+  class UserSubscription <<Entity>>
+}
+
+' -------------------------------------------------------
+' REPOSITORIES
+' -------------------------------------------------------
+package "Repositories" {
+
+  interface ParkingAreaRepo <<Repository>> {
+    ' JpaRepository<ParkingArea, Long>
+  }
+
+  interface ParkingSpotRepo <<Repository>> {
+    ' JpaRepository<ParkingSpot, Long>
+  }
+
+  interface SensorRepo <<Repository>> {
+    + findBySpot(spot : ParkingSpot) : Optional
+  }
+
+  interface SensorReadingRepo <<Repository>> {
+    + findFirstBySensorOrderByReadingTimeDesc(sensor : SensorDevice) : Optional
+  }
+
+  interface UserRepository <<Repository>> {
+    + existsByEmail(email : String) : boolean
+    + findByEmail(email : String) : Optional
+  }
+
+  interface CarRepository <<Repository>> {
+    + findByUserAndActiveTrue(user : User) : List<Car>
+    + findByUserId(userId : Long) : List<Car>
+    + findByLicensePlate(licensePlate : String) : Optional<Car>
+    + existsByLicensePlate(licensePlate : String) : boolean
+  }
+
+  interface SubscriptionPlanRepo <<Repository>> {
+    + findByActiveTrue() : List<SubscriptionPlan>
+  }
+
+  interface UserSubscriptionRepository <<Repository>> {
+    + findFirstByUserIdAndStatus(userId : Long, status : SubscriptionStatus) : Optional<UserSubscription>
+  }
+}
+
+package "Repository Impl" {
+
+  class ParkingSpotRepoImpl {
+    ' custom query logic (if any)
+  }
+
+  class SensorReadingRepoImpl {
+    ' custom query logic (if any)
+  }
+
+  class SubscriptionRepoImpl {
+    ' custom query logic (if any)
+  }
+}
+
+' -------------------------------------------------------
+' RELATIONSHIPS
+' -------------------------------------------------------
+ParkingAreaRepo --> ParkingArea
+ParkingSpotRepo --> ParkingSpot
+SensorRepo --> SensorDevice
+SensorReadingRepo --> SensorReading
+UserRepository --> User
+CarRepository --> Car
+SubscriptionPlanRepo --> SubscriptionPlan
+UserSubscriptionRepository --> UserSubscription
+
+@enduml

@@ -1,0 +1,37 @@
+<!-- Notification Bell Fragment -->
+<div th:fragment="notification-bell" class="notification-wrapper">
+    <!-- Bell Icon with Badge -->
+    <div class="dropdown" id="notificationDropdownWrapper">
+        <button class="notification-bell-btn"
+                type="button"
+                id="notificationDropdown"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
+            <i class="bi bi-bell-fill"></i>
+            <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+        </button>
+
+        <!-- Dropdown Panel -->
+        <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationDropdown" id="notificationDropdownMenu">
+            <!-- Header -->
+            <div class="notification-header">
+                <h6 class="mb-0">Notifications</h6>
+                <button class="btn btn-link btn-sm text-primary p-0" id="markAllReadBtnDropdown">
+                    Mark all read
+                </button>
+            </div>
+
+            <!-- Notification List -->
+            <div class="notification-list" id="notificationList">
+                <!-- Will be populated by JS -->
+            </div>
+
+            <!-- Footer -->
+            <div class="notification-footer">
+                <a href="/notifications" class="text-primary text-decoration-none small">
+                    View all notifications
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

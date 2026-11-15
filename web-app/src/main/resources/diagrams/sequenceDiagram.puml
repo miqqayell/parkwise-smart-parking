@@ -1,0 +1,78 @@
+@startuml
+title "Check real-time parking spot availability (backend flow)"
+
+actor Driver
+boundary WebClient as UI
+control ParkingController
+control ParkingServiceImpl as ParkingService
+database ParkingSpotRepo
+database SensorRepo
+database SensorReadingRepo
+
+Driver -> UI: Open app / refresh parking map
+UI -> ParkingController: GET /api/parking/status
+activate ParkingController
+
+' 1) Controller asks service for all spots
+ParkingController -> ParkingService: findAll()
+activate ParkingService
+ParkingService -> ParkingSpotRepo: findAll()
+activate ParkingSpotRepo
+ParkingSpotRepo --> ParkingService: List<ParkingSpot>
+deactivate ParkingSpotRepo
+ParkingService --> ParkingController: List<ParkingSpot>
+deactivate ParkingService
+
+' 2) For each spot, compute latest status
+loop for each ParkingSpot
+  ParkingController -> ParkingService: getLatestStatus(spot.id)
+  activate ParkingService
+
+  ' 2.1 Load spot (defensive)
+  ParkingService -> ParkingSpotRepo: findById(spot.id)
+  activate ParkingSpotRepo
+  ParkingSpotRepo --> ParkingService: Optional<ParkingSpot>
+  deactivate ParkingSpotRepo
+
+  alt spot not found
+    ParkingService --> ParkingController: ParkingSpotStatus.UNKNOWN
+  else spot found
+    ' 2.2 Load sensor for that spot
+    ParkingService -> SensorRepo: findBySpot(spot)
+    activate SensorRepo
+    SensorRepo --> ParkingService: Optional<SensorDevice>
+    deactivate SensorRepo
+
+    alt no sensor for spot
+      ParkingService --> ParkingController: ParkingSpotStatus.UNKNOWN
+    else sensor found
+      ' 2.3 Load latest reading for sensor
+      ParkingService -> SensorReadingRepo: findFirstBySensorOrderByReadingTimeDesc(sensor)
+      activate SensorReadingRepo
+      SensorReadingRepo --> ParkingService: Optional<SensorReading>
+      deactivate SensorReadingRepo
+
+      alt no reading exists yet
+        ParkingService --> ParkingController: ParkingSpotStatus.UNKNOWN
+      else reading found
+        ' 2.4 Derive status from reading (business rule)
+        ParkingService -> ParkingService: occupied = reading.getOccupied()
+        ' Business rule (inside deriveStatus):\n' if reading.occupied == TRUE -> OCCUPIED\n' if FALSE -> FREE\n' if null -> UNKNOWN
+        ParkingService --> ParkingController: ParkingSpotStatus.{FREE or OCCUPIED}
+      end
+    end
+  end
+
+  deactivate ParkingService
+
+  ' 2.5 Controller builds response entry
+  ParkingController -> ParkingController: updateStatus(Long id, ParkingSpotStatus status)
+end
+
+' 3) Return aggregated result to client
+ParkingController --> UI: function updateStatuses()
+deactivate ParkingController
+
+UI --> Driver: Render map with free/occupied spots
+
+@enduml

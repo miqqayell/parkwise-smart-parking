@@ -1,0 +1,249 @@
+@startuml
+title ParkWise – Domain + Value Objects + Enums
+
+skinparam classAttributeIconSize 0
+
+package "be.kdg.parkwise.domain" {
+
+  class ParkingArea <<Entity>> {
+    - longitude : Double
+    - active : boolean
+    - id : Long
+    - address : String
+    - latitude : Double
+    - areaName : String
+    - areaType : String
+    - totalCapacity : Integer
+    - areaPostcode : String
+
+    + getId() : Long
+    + getAreaName() : String
+    + getAreaType() : String
+    + getAddress() : String
+    + getAreaPostcode() : String
+    + getLatitude() : Double
+    + getLongitude() : Double
+    + getTotalCapacity() : Integer
+    + isActive() : boolean
+
+    + setAreaName(String) : void
+    + setAreaType(String) : void
+    + setAddress(String) : void
+    + setAreaPostcode(String) : void
+    + setLatitude(Double) : void
+    + setLongitude(Double) : void
+    + setTotalCapacity(Integer) : void
+    + setActive(boolean) : void
+  }
+
+  class ParkingSpot <<Entity>> {
+    - lastUpdated : Instant
+    - label : String
+    - area : ParkingArea
+    - operating : boolean
+    - id : Long
+    - latitude : double
+    - longitude : double
+    - spotNumber : Integer
+    - status : ParkingSpotStatus
+
+    - fillTransientFields() : void
+
+    + getId() : Long
+    + getLabel() : String
+    + getArea() : ParkingArea
+    + getLatitude() : double
+    + getLongitude() : double
+    + getSpotNumber() : Integer
+    + isOperating() : boolean
+    + getStatus() : ParkingSpotStatus
+    + getLastUpdated() : Instant
+
+    + setArea(ParkingArea) : void
+    + setSpotNumber(Integer) : void
+    + setOperating(boolean) : void
+    + setStatus(ParkingSpotStatus) : void
+    + setLastUpdated(Instant) : void
+  }
+
+  class SensorDevice <<Entity>> {
+    - spot : ParkingSpot
+    - sensorType : String
+    - id : Long
+    - hardwareModel : String
+    - active : boolean
+
+    + getId() : Long
+    + getSpot() : ParkingSpot
+    + getSensorType() : String
+    + getHardwareModel() : String
+    + isActive() : boolean
+
+    + setSpot(ParkingSpot) : void
+    + setSensorType(String) : void
+    + setHardwareModel(String) : void
+    + setActive(boolean) : void
+  }
+
+  class SensorReading <<Entity>> {
+    - sensor : SensorDevice
+    - readingTime : Instant
+    - metalDetected : Boolean
+    - occupied : Boolean
+    - id : Long
+    - distanceMm : Integer
+
+    + getId() : Long
+    + getSensor() : SensorDevice
+    + getReadingTime() : Instant
+    + getDistanceMm() : Integer
+    + getMetalDetected() : Boolean
+    + getOccupied() : Boolean
+
+    + setSensor(SensorDevice) : void
+    + setReadingTime(Instant) : void
+    + setDistanceMm(Integer) : void
+    + setMetalDetected(Boolean) : void
+    + setOccupied(Boolean) : void
+  }
+
+  class User <<Entity>> {
+    - lastName : String
+    - firstName : String
+    - id : Long
+    - email : String
+    - createdAt : LocalDateTime
+    - password : String
+
+    + getId() : Long
+    + getEmail() : String
+    + getFirstName() : String
+    + getLastName() : String
+    + getCreatedAt() : LocalDateTime
+    + getPassword() : String
+
+    + setId(Long) : void
+    + setEmail(String) : void
+    + setFirstName(String) : void
+    + setLastName(String) : void
+    + setCreatedAt(LocalDateTime) : void
+    + setPassword(String) : void
+  }
+
+  class SubscriptionPlan <<Entity>> {
+    - id : Long
+    - name : String
+    - code : String
+    - monthlyPrice : BigDecimal
+    - description : String
+    - active : boolean
+    - hasAnalytics : boolean
+    - hasPrediction : boolean
+  }
+
+  class UserSubscription <<Entity>> {
+    - id : Long
+    - user : User
+    - plan : SubscriptionPlan
+    - status : SubscriptionStatus
+    - startDate : LocalDateTime
+    - endDate : LocalDateTime
+    - lockedPrice : BigDecimal
+    - lockedPlanName : String
+    - lockedPlanCode : String
+    - hasAnalytics : boolean
+    - hasPrediction : boolean
+  }
+
+  class Car <<Entity>> {
+    - id : Long
+    - user : User
+    - brand : String
+    - model : String
+    - licensePlate : String
+    - color : String
+    - documentPath : String
+    - timesParked : int
+    - createdAt : Instant
+    - active : boolean
+  }
+}
+
+package "be.kdg.parkwise.domain.valueobject" {
+
+  enum ParkingSpotStatus <<Enumeration>> {
+    UNKNOWN
+    FREE
+    OCCUPIED
+  }
+
+  class Email <<ValueObject>> {
+    - value : String
+    - EMAIL_PATTERN : Pattern
+    + value() : String
+    + toString() : String
+  }
+
+  class Password <<ValueObject>> {
+    - hashedValue : String
+    + hashedValue() : String
+    + validateRawPassword(String) : void
+  }
+
+  class UserProfile <<ValueObject>> {
+    - firstName : String
+    - lastName : String
+    + firstName() : String
+    + lastName() : String
+    + getFullName() : String
+  }
+
+  class LicensePlate <<ValueObject>> { }
+
+  class LoginRequest <<ValueObject>> {
+    - email : String
+    - password : String
+  }
+
+  class MeasurementValue <<ValueObject>> { }
+  class Probability <<ValueObject>> { }
+  class TimestampValue <<ValueObject>> { }
+  class SensorDescriptor <<ValueObject>> { }
+}
+
+package "be.kdg.parkwise.domain.Enum" {
+  enum SensorType <<Enumeration>> {
+    ' values(), valueOf() in code
+  }
+
+  enum SubscriptionType <<Enumeration>> {
+    ' values(), valueOf() in code
+  }
+
+  enum SubscriptionStatus <<Enumeration>> {
+    ' ACTIVE, CANCELLED, EXPIRED
+  }
+}
+
+' -------- RELATIONSHIPS (entities & VOs) --------
+ParkingArea "1" o-- "0..*" ParkingSpot : spots
+ParkingSpot "1" o-- "0..1" SensorDevice : sensor
+SensorDevice "1" o-- "0..*" SensorReading : readings
+User "1" o-- "0..*" UserSubscription : subscriptions
+UserSubscription "1" o-- "1" SubscriptionPlan : plan
+User "1" o-- "0..*" Car : cars
+ParkingSpot "1" o-- "0..*" Prediction : predictions
+
+Prediction ..> Probability : uses
+Prediction ..> MeasurementValue : uses
+Prediction ..> TimestampValue : uses
+
+User ..> Email : uses
+User ..> Password : uses
+User ..> UserProfile : uses
+
+SensorDevice ..> SensorType : type
+SensorDevice ..> SensorDescriptor : descriptor
+SensorReading ..> MeasurementValue : derived
+
+@enduml

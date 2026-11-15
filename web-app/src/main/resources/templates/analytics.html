@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head('Analytics – ParkWise')"></head>
+<body>
+<div th:replace="fragments/nav :: nav"></div>
+
+<main class="app-shell">
+  <section class="container py-5">
+    <!-- Header -->
+    <div class="text-center mb-5 fade-in">
+      <div class="badge-soft-primary mb-3">
+        <i class="bi bi-graph-up-arrow me-2"></i>Premium Analytics
+      </div>
+      <h1 class="section-title-modern mb-3">Parking Analytics Dashboard</h1>
+      <p class="section-subtitle-modern">Deep insights into parking patterns, trends, and utilization across Antwerp.</p>
+    </div>
+
+    <!-- Error Alert (if Python service is down) -->
+    <div th:if="${error}" class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <strong>Analytics Service Unavailable:</strong> <span th:text="${error}"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Stats Cards Row -->
+    <div class="row g-4 mb-5 fade-in" th:if="${stats != null && !stats.containsKey('error')}">
+      <div class="col-md-3">
+        <div class="analytics-stat-card">
+          <div class="stat-icon bg-primary-glow">
+            <i class="bi bi-activity"></i>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value" th:text="${stats.total_readings_24h}">1,234</h3>
+            <p class="stat-label">Readings (24h)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="analytics-stat-card">
+          <div class="stat-icon bg-success-glow">
+            <i class="bi bi-check-circle-fill"></i>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value" th:text="${stats.available_spots}">8</h3>
+            <p class="stat-label">Available Now</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="analytics-stat-card">
+          <div class="stat-icon bg-danger-glow">
+            <i class="bi bi-car-front-fill"></i>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value" th:text="${stats.occupied_spots}">4</h3>
+            <p class="stat-label">Occupied Now</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="analytics-stat-card">
+          <div class="stat-icon bg-warning-glow">
+            <i class="bi bi-percent"></i>
+          </div>
+          <div class="stat-content">
+            <h3 class="stat-value" th:text="${stats.avg_occupancy_24h + '%'}">65%</h3>
+            <p class="stat-label">Avg Occupancy</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Predictions Section -->
+    <div class="row g-4 mb-5" th:if="${aiPredictions != null}">
+      <div class="col-12">
+        <div class="analytics-card fade-in">
+          <div class="analytics-card-header">
+            <div>
+              <h3 class="card-title">
+                <i class="bi bi-robot me-2"></i>AI-Powered Busyness Predictions
+              </h3>
+              <p class="card-subtitle">Real-time machine learning predictions for all districts</p>
+            </div>
+          </div>
+          <div class="analytics-card-body">
+            <!-- Current Weather Info -->
+            <div th:if="${weather != null}" class="weather-info mb-4">
+              <div class="row g-3">
+                <div class="col-md-3">
+                  <div class="weather-card">
+                    <i class="bi bi-thermometer-half weather-icon"></i>
+                    <div>
+                      <div class="weather-value" th:text="${weather.temperature_c + '°C'}">15°C</div>
+                      <div class="weather-label">Temperature</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="weather-card">
+                    <i class="bi bi-droplet-half weather-icon"></i>
+                    <div>
+                      <div class="weather-value" th:text="${weather.humidity_pct + '%'}">70%</div>
+                      <div class="weather-label">Humidity</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="weather-card">
+                    <i class="bi bi-cloud-rain weather-icon"></i>
+                    <div>
+                      <div class="weather-value" th:text="${weather.rainfall_mm + ' mm'}">0 mm</div>
+                      <div class="weather-label">Rainfall</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="weather-card">
+                    <i class="bi bi-wind weather-icon"></i>
+                    <div>
+                      <div class="weather-value" th:text="${weather.wind_speed_kmh + ' km/h'}">10 km/h</div>
+                      <div class="weather-label">Wind Speed</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- District Predictions -->
+            <div class="row g-3">
+              <div class="col-md-6 col-lg-3" th:each="entry : ${aiPredictions}">
+                <div class="prediction-card"
+                     th:classappend="${entry.value.busyness_level == 3} ? 'high-busyness' :
+                                           (${entry.value.busyness_level == 2} ? 'moderate-busyness' :
+                                           (${entry.value.busyness_level == 1} ? 'low-busyness' : 'very-low-busyness'))">
+                  <div class="prediction-header">
+                    <i class="bi bi-geo-alt-fill prediction-icon"></i>
+                    <h4 class="prediction-district" th:text="${entry.key}">Historic Center</h4>
+                  </div>
+                  <div class="prediction-level">
+                    <div class="level-indicator" th:text="${entry.value.busyness_level}">0</div>
+                    <div class="level-label" th:text="${entry.value.label}">Very Low</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Forecast Chart -->
+    <div class="analytics-card fade-in mb-4" style="animation-delay: 0.05s;" th:if="${aiBusynessChart != null}">
+      <div class="analytics-card-header">
+        <div>
+          <h3 class="card-title"><i class="bi bi-graph-up me-2"></i>24-Hour AI Forecast</h3>
+          <p class="card-subtitle">Predicted parking busyness across all districts</p>
+        </div>
+      </div>
+      <div class="analytics-card-body">
+        <div class="chart-container">
+          <img th:src="${aiBusynessChart}" alt="AI Forecast" class="analytics-chart-img">
+        </div>
+      </div>
+    </div>
+
+    <!-- Occupancy Over Time Chart -->
+    <div class="analytics-card fade-in mb-4" style="animation-delay: 0.1s;">
+      <div class="analytics-card-header">
+        <div>
+          <h3 class="card-title"><i class="bi bi-graph-up me-2"></i>Occupancy Trends</h3>
+          <p class="card-subtitle">Real-time parking utilization over the past week</p>
+        </div>
+      </div>
+      <div class="analytics-card-body">
+        <div th:if="${occupancyChart != null}" class="chart-container">
+          <img th:src="${occupancyChart}" alt="Occupancy Chart" class="analytics-chart-img">
+        </div>
+        <div th:unless="${occupancyChart != null}" class="empty-chart">
+          <i class="bi bi-bar-chart empty-icon"></i>
+          <p class="text-muted">No data available for occupancy trends</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Heatmap Chart -->
+    <div class="analytics-card fade-in mb-4" style="animation-delay: 0.2s;">
+      <div class="analytics-card-header">
+        <div>
+          <h3 class="card-title"><i class="bi bi-grid-3x3-gap me-2"></i>Spot Usage Heatmap</h3>
+          <p class="card-subtitle">Hourly occupancy patterns by parking spot</p>
+        </div>
+      </div>
+      <div class="analytics-card-body">
+        <div th:if="${heatmapChart != null}" class="chart-container">
+          <img th:src="${heatmapChart}" alt="Heatmap" class="analytics-chart-img">
+        </div>
+        <div th:unless="${heatmapChart != null}" class="empty-chart">
+          <i class="bi bi-grid empty-icon"></i>
+          <p class="text-muted">No data available for heatmap</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two Column Layout: Scatter + Peak Hours -->
+    <div class="row g-4 mb-4">
+      <!-- Distance Scatter Plot -->
+      <div class="col-lg-8">
+        <div class="analytics-card fade-in" style="animation-delay: 0.3s;">
+          <div class="analytics-card-header">
+            <div>
+              <h3 class="card-title"><i class="bi bi-scatter-chart me-2"></i>Sensor Readings</h3>
+              <p class="card-subtitle">Distance measurements vs occupancy status</p>
+            </div>
+          </div>
+          <div class="analytics-card-body">
+            <div th:if="${scatterChart != null}" class="chart-container">
+              <img th:src="${scatterChart}" alt="Scatter Plot" class="analytics-chart-img">
+            </div>
+            <div th:unless="${scatterChart != null}" class="empty-chart">
+              <i class="bi bi-diagram-3 empty-icon"></i>
+              <p class="text-muted">No sensor data available</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Peak Hours Card -->
+      <div class="col-lg-4">
+        <div class="analytics-card fade-in" style="animation-delay: 0.4s;">
+          <div class="analytics-card-header">
+            <div>
+              <h3 class="card-title"><i class="bi bi-clock-history me-2"></i>Peak Hours</h3>
+              <p class="card-subtitle">Busiest times of the day</p>
+            </div>
+          </div>
+          <div class="analytics-card-body">
+            <div th:if="${peakHours != null}" class="peak-hours-list">
+              <div th:each="hour, iterStat : ${peakHours}"
+                   class="peak-hour-item"
+                   th:classappend="${iterStat.index == 0} ? 'top-peak' : ''">
+                <div class="peak-rank" th:text="${iterStat.index + 1}">1</div>
+                <div class="peak-info">
+                  <div class="peak-time" th:text="${hour.hour + ':00'}">14:00</div>
+                  <div class="peak-stats">
+                    <span class="badge bg-danger" th:text="${hour.occupancy_rate + '%'}">85%</span>
+                    <span class="text-muted small" th:text="${hour.occupied_count + ' occupied'}">120 occupied</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div th:unless="${peakHours != null}" class="empty-chart">
+              <i class="bi bi-clock empty-icon"></i>
+              <p class="text-muted">No peak hour data</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Insights Card -->
+    <div class="analytics-card fade-in" style="animation-delay: 0.5s;">
+      <div class="analytics-card-header">
+        <div>
+          <h3 class="card-title"><i class="bi bi-lightbulb me-2"></i>Key Insights</h3>
+          <p class="card-subtitle">AI-generated recommendations</p>
+        </div>
+      </div>
+      <div class="analytics-card-body">
+        <div class="insights-grid">
+          <div class="insight-item">
+            <i class="bi bi-arrow-up-circle insight-icon text-success"></i>
+            <div class="insight-content">
+              <h4>Best Time to Park</h4>
+              <p>Early mornings (6-8 AM) show 40% lower occupancy rates</p>
+            </div>
+          </div>
+          <div class="insight-item">
+            <i class="bi bi-exclamation-triangle insight-icon text-warning"></i>
+            <div class="insight-content">
+              <h4>Avoid Peak Hours</h4>
+              <p>Weekday afternoons (2-5 PM) are consistently 80%+ occupied</p>
+            </div>
+          </div>
+          <div class="insight-item">
+            <i class="bi bi-star insight-icon text-primary"></i>
+            <div class="insight-content">
+              <h4>Popular Locations</h4>
+              <p>Campus Zuid has 30% higher turnover than city center spots</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<div th:replace="fragments/nav :: modals"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // Auto-refresh every 5 minutes
+  setTimeout(() => {
+    location.reload();
+  }, 5 * 60 * 1000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head('Subscriptions — ParkWise')"></head>
+<body>
+<div th:replace="fragments/nav :: nav"></div>
+
+<main class="app-shell">
+    <section class="container py-5">
+        <!-- Header -->
+        <div class="text-center mb-5 fade-in">
+            <div class="badge-soft-primary mb-3">
+                <i class="bi bi-star-fill me-2"></i>Flexible Pricing
+            </div>
+            <h1 class="section-title-modern mb-3">Choose Your Perfect Plan</h1>
+            <p class="section-subtitle-modern">All plans unlock powerful parking intelligence. Start your journey today.</p>
+        </div>
+
+        <!-- Alerts -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i><span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Pricing Cards -->
+        <div class="row g-4 justify-content-center align-items-stretch">
+            <!-- BASIC Plan -->
+            <div class="col-lg-4 col-md-6">
+                <div class="pricing-card pricing-card-basic h-100 fade-in">
+                    <div class="pricing-header">
+                        <div class="plan-icon bg-primary-soft mb-3">
+                            <i class="bi bi-map text-primary"></i>
+                        </div>
+                        <h3 class="fw-bold mb-2">Basic</h3>
+                        <div class="price-wrapper mb-3">
+                            <span class="currency">€</span>
+                            <span class="price">3</span>
+                            <span class="period">/month</span>
+                        </div>
+                        <p class="plan-description text-muted">Perfect for occasional parkers</p>
+                    </div>
+
+                    <div class="pricing-body">
+                        <ul class="feature-list">
+                            <li class="feature-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span>Real-time parking map</span>
+                            </li>
+                            <li class="feature-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span>Live spot occupancy</span>
+                            </li>
+                            <li class="feature-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span>Mobile notifications</span>
+                            </li>
+                            <li class="feature-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span>Basic search filters</span>
+                            </li>
+                            <li class="feature-item text-muted">
+                                <i class="bi bi-x-circle me-2"></i>
+                                <span>Analytics & insights</span>
+                            </li>
+                            <li class="feature-item text-muted">
+                                <i class="bi bi-x-circle me-2"></i>
+                                <span>AI predictions</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="pricing-footer">
+                        <div th:if="${currentUser != null}">
+                            <!-- Current Plan -->
+                            <div th:if="${currentSubscription != null && currentSubscription.lockedPlanCode == 'BASIC'}">
+                                <button class="btn btn-outline-primary w-100 btn-lg" disabled>
+                                    <i class="bi bi-check-circle me-2"></i>Current Plan
+                                </button>
+                            </div>
+                            <!-- Can Downgrade -->
+                            <div th:if="${currentSubscription != null && currentSubscription.lockedPlanCode != 'BASIC' && (currentSubscription.lockedPlanCode == 'PREMIUM' || currentSubscription.lockedPlanCode == 'ULTRA')}">
+                                <button class="btn btn-outline-primary w-100 btn-lg"
+                                        data-bs-toggle="modal"
+                                        th:attr="data-bs-target='#changePlanModal-1'">
+                                    <i class="bi bi-arrow-down-circle me-2"></i>Downgrade to Basic
+                                </button>
+                            </div>
+                            <!-- No Subscription -->
+                            <div th:unless="${currentSubscription != null}">
+                                <form th:action="@{/subscriptions/1/subscribe}" method="post">
+                                    <button type="submit" class="btn btn-primary w-100 btn-lg">
+                                        Subscribe Now
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div th:if="${currentUser == null}">
+                            <button class="btn btn-outline-primary w-100 btn-lg"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#loginModal">
+                                Log in to Subscribe
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PREMIUM Plan - Most Popular -->
+            <div class="col-lg-4 col-md-6">
+                <div class="pricing-card pricing-card-premium h-100 fade-in popular-badge-wrapper" style="animation-delay: 0.1s">
+                    <div class="pricing-header">
+                        <div class="plan-icon bg-success-soft mb-3">
+                            <i class="bi bi-graph-up-arrow text-success"></i>
+                        </div>
+                        <h3 class="fw-bold mb-2">Premium</h3>
+                        <div class="price-wrapper mb-3">
+                            <span class="currency">€</span>
+                            <span class="price">6</span>
+                            <span class="period">/month</span>
+                        </div>
+                        <p class="plan-description text-muted">For regular city drivers</p>
+                    </div>
+
+                    <div class="pricing-body">
+                        <ul class="feature-list">
+                            <li class="feature-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span><strong>Everything in Basic</strong></span>
+                            </li>
+                            <li class="feature-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span>Advanced analytics dashboard</span>
+                            </li>
+                            <li class="feature-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span>Historical parking trends</span>
+                            </li>
+                            <li class="feature-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span>Peak hour insights</span>
+                            </li>
+                            <li class="feature-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span>Priority customer support</span>
+                            </li>
+                            <li class="feature-item text-muted">
+                                <i class="bi bi-x-circle me-2"></i>
+                                <span>AI-powered predictions</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="pricing-footer">
+                        <div th:if="${currentUser != null}">
+                            <!-- Current Plan -->
+                            <div th:if="${currentSubscription != null && currentSubscription.lockedPlanCode == 'PREMIUM'}">
+                                <button class="btn btn-success w-100 btn-lg" disabled>
+                                    <i class="bi bi-check-circle me-2"></i>Current Plan
+                                </button>
+                            </div>
+                            <!-- Can Upgrade from Basic -->
+                            <div th:if="${currentSubscription != null && currentSubscription.lockedPlanCode == 'BASIC'}">
+                                <button class="btn btn-success w-100 btn-lg shadow"
+                                        data-bs-toggle="modal"
+                                        th:attr="data-bs-target='#changePlanModal-2'">
+                                    <i class="bi bi-arrow-up-circle me-2"></i>Upgrade to Premium
+                                </button>
+                            </div>
+                            <!-- Can Downgrade from Ultra -->
+                            <div th:if="${currentSubscription != null && currentSubscription.lockedPlanCode == 'ULTRA'}">
+                                <button class="btn btn-outline-success w-100 btn-lg"
+                                        data-bs-toggle="modal"
+                                        th:attr="data-bs-target='#changePlanModal-2'">
+                                    <i class="bi bi-arrow-down-circle me-2"></i>Downgrade to Premium
+                                </button>
+                            </div>
+                            <!-- No Subscription -->
+                            <div th:unless="${currentSubscription != null}">
+                                <form th:action="@{/subscriptions/2/subscribe}" method="post">
+                                    <button type="submit" class="btn btn-success w-100 btn-lg shadow">
+                                        Upgrade to Premium
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div th:if="${currentUser == null}">
+                            <button class="btn btn-success w-100 btn-lg"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#loginModal">
+                                Log in to Subscribe
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ULTRA Plan -->
+            <div class="col-lg-4 col-md-6">
+                <div class="pricing-card pricing-card-ultra h-100 fade-in" style="animation-delay: 0.2s">
+                    <div class="pricing-header">
+                        <div class="popular-badge">
+                            <i class="bi bi-star-fill me-1"></i>Most Popular
+                        </div>
+                        <div class="plan-icon bg-gradient-ultra mb-3">
+                            <i class="bi bi-stars text-white"></i>
+                        </div>
+                        <h3 class="fw-bold mb-2">Ultra</h3>
+                        <div class="price-wrapper mb-3">
+                            <span class="currency">€</span>
+                            <span class="price">10</span>
+                            <span class="period">/month</span>
+                        </div>
+                        <p class="plan-description text-muted">Maximum intelligence & features</p>
+                    </div>
+
+                    <div class="pricing-body">
+                        <ul class="feature-list">
+                            <li class="feature-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span><strong>Everything in Premium</strong></span>
+                            </li>
+                            <li class="feature-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span><strong>AI-powered predictions</strong></span>
+                            </li>
+                            <li class="feature-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span>Smart route recommendations</span>
+                            </li>
+                            <li class="feature-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span>Personalized parking suggestions</span>
+                            </li>
+                            <li class="feature-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span>Advanced API access</span>
+                            </li>
+                            <li class="feature-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span>24/7 premium support</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="pricing-footer">
+                        <div th:if="${currentUser != null}">
+                            <!-- Current Plan -->
+                            <div th:if="${currentSubscription != null && currentSubscription.lockedPlanCode == 'ULTRA'}">
+                                <button class="btn btn-gradient-ultra w-100 btn-lg" disabled>
+                                    <i class="bi bi-check-circle me-2"></i>Current Plan
+                                </button>
+                            </div>
+                            <!-- Can Upgrade -->
+                            <div th:if="${currentSubscription != null && currentSubscription.lockedPlanCode != 'ULTRA'}">
+                                <button class="btn btn-gradient-ultra w-100 btn-lg shadow"
+                                        data-bs-toggle="modal"
+                                        th:attr="data-bs-target='#changePlanModal-3'">
+                                    <i class="bi bi-arrow-up-circle me-2"></i>Upgrade to Ultra
+                                </button>
+                            </div>
+                            <!-- No Subscription -->
+                            <div th:unless="${currentSubscription != null}">
+                                <form th:action="@{/subscriptions/3/subscribe}" method="post">
+                                    <button type="submit" class="btn btn-gradient-ultra w-100 btn-lg shadow">
+                                        Upgrade to Ultra
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div th:if="${currentUser == null}">
+                            <button class="btn btn-outline-dark w-100 btn-lg"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#loginModal">
+                                Log in to Subscribe
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container py-5">
+        <div class="text-center mb-5 fade-in">
+            <h2 class="section-title-modern mb-3">Frequently Asked Questions</h2>
+            <p class="section-subtitle-modern">Everything you need to know about ParkWise subscriptions.</p>
+        </div>
+
+        <div class="faq-container fade-in" style="animation-delay: 0.2s;">
+            <div class="accordion accordion-glass" id="faqAccordion">
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            Can I cancel my subscription at any time?
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Absolutely. We believe in freedom. You can cancel your subscription instantly from your profile dashboard. Your benefits will continue until the end of your current billing period, and you won't be charged again.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            How accurate is the real-time data?
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Our data is refreshed every 30 seconds. For the Premium plan, we combine sensor data with our AI prediction model to give you 98% accuracy on spot availability, even in high-traffic areas.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            Can I switch plans later?
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Yes! You can upgrade or downgrade at any time from your profile page or the subscriptions page. When upgrading, your new features are immediately available. When downgrading, the change takes effect at your next billing cycle.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Change Plan Modals  -->
+<!-- BASIC Plan Change Modal -->
+<div class="modal fade" id="changePlanModal-1" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0" style="background-color: #2563eb; color: white;">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-arrow-left-right me-2"></i>Change to Basic Plan
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="mb-3">Are you sure you want to switch to the <strong>Basic</strong> plan?</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    You will lose access to advanced features like analytics and AI predictions.
+                </div>
+                <form th:action="@{/subscriptions/1/change}" method="post">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle me-2"></i>Confirm Change
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PREMIUM Plan Change Modal -->
+<div class="modal fade" id="changePlanModal-2" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0" style="background-color: #10b981; color: white;">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-arrow-left-right me-2"></i>Change to Premium Plan
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="mb-3">Switch to the <strong>Premium</strong> plan for advanced analytics and insights.</p>
+                <div class="alert alert-success">
+                    <i class="bi bi-star-fill me-2"></i>
+                    You'll get access to historical trends, peak hour insights, and priority support!
+                </div>
+                <form th:action="@{/subscriptions/2/change}" method="post">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-circle me-2"></i>Confirm Change
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ULTRA Plan Change Modal -->
+<div class="modal fade" id="changePlanModal-3" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #8b5cf6, #a855f7); color: white;">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-arrow-left-right me-2"></i>Change to Ultra Plan
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="mb-3">Upgrade to <strong>Ultra</strong> for maximum intelligence and exclusive features!</p>
+                <div class="alert alert-info">
+                    <i class="bi bi-stars me-2"></i>
+                    Unlock AI-powered predictions, smart recommendations, and 24/7 premium support!
+                </div>
+                <form th:action="@{/subscriptions/3/change}" method="post">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-gradient-ultra btn-lg">
+                            <i class="bi bi-check-circle me-2"></i>Confirm Change
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/nav :: modals"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

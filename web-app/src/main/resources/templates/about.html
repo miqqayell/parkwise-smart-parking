@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head('About – ParkWise')"></head>
+<body>
+<div th:replace="fragments/nav :: nav"></div>
+
+<main class="app-shell">
+    <!-- Hero Section -->
+    <section class="container py-5">
+        <div class="text-center mb-5 fade-in">
+            <div class="badge-soft-primary mb-3">
+                <i class="bi bi-info-circle-fill me-2"></i>About Us
+            </div>
+            <h1 class="section-title-modern mb-3">About ParkWise</h1>
+            <p class="section-subtitle-modern">Smart parking project for Antwerp. Sensors + AI + Simple UI.</p>
+        </div>
+
+        <!-- Our Story Card -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-12">
+                <div class="about-story-card fade-in">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <h3 class="fw-bold text-white mb-4">
+                                <i class="bi bi-book-fill me-2"></i>Our Story
+                            </h3>
+                            <p class="text-light opacity-90 mb-3">
+                                We're building a scalable parking assistant: ground sensors detect occupancy,
+                                the backend aggregates readings, and a prediction model estimates busy hours per zone.
+                                This demo uses sample streets while the database and ingestion endpoints are being finalized.
+                            </p>
+
+                            <div class="tech-stack mt-4">
+                                <h6 class="text-white fw-bold mb-3">Technology Stack</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <div class="tech-item">
+                                            <i class="bi bi-gear-fill text-warning"></i>
+                                            <div>
+                                                <div class="tech-title">Hardware</div>
+                                                <div class="tech-desc">Magnetometer + distance sensors (Arduino) over GSM</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="tech-item">
+                                            <i class="bi bi-server text-primary"></i>
+                                            <div>
+                                                <div class="tech-title">Backend</div>
+                                                <div class="tech-desc">Spring Boot, JPA, PostgreSQL</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="tech-item">
+                                            <i class="bi bi-palette-fill text-success"></i>
+                                            <div>
+                                                <div class="tech-title">Frontend</div>
+                                                <div class="tech-desc">Thymeleaf, Bootstrap, Leaflet</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 text-center d-none d-lg-block">
+                            <div class="story-visual">
+                                <i class="bi bi-diagram-3-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="section-title-modern mb-3">Meet Our Team</h2>
+            <p class="section-subtitle-modern">The brilliant minds behind ParkWise</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Mikayel -->
+            <div class="col-md-6 col-lg-4">
+                <div class="team-card-modern fade-in">
+                    <div class="team-card-header">
+                        <img src="/img/avatar-placeholder.svg" class="team-avatar" alt="">
+                        <div class="team-role-badge bg-primary">Full-Stack</div>
+                    </div>
+                    <div class="team-card-body">
+                        <h5 class="team-name">Mikayel Ghalumyan</h5>
+                        <p class="team-role">Full-Stack Web Developer</p>
+                        <p class="team-description">
+                            Developed the front-end interface and integrated third-party APIs, including the
+                            interactive map functionality. Focused on creating a responsive, user-friendly and
+                            visually consistent web experience.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teammate 1 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="team-card-modern fade-in" style="animation-delay: 0.1s">
+                    <div class="team-card-header">
+                        <img src="/img/avatar-placeholder.svg" class="team-avatar" alt="">
+                        <div class="team-role-badge bg-warning">Hardware</div>
+                    </div>
+                    <div class="team-card-body">
+                        <h5 class="team-name">Teammate 1</h5>
+                        <p class="team-role">Arduino & Sensors Engineer</p>
+                        <p class="team-description">
+                            Managed sensor configuration, Arduino integrations, and physical hardware mapping
+                            for the parking detection system.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teammate 2 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="team-card-modern fade-in" style="animation-delay: 0.2s">
+                    <div class="team-card-header">
+                        <img src="/img/avatar-placeholder.svg" class="team-avatar" alt="">
+                        <div class="team-role-badge bg-success">Team Lead</div>
+                    </div>
+                    <div class="team-card-body">
+                        <h5 class="team-name">Teammate 2</h5>
+                        <p class="team-role">Team Lead & Backend Developer</p>
+                        <p class="team-description">
+                            Supported the team throughout the entire project lifecycle by monitoring progress,
+                            managing GitLab activities, and ensuring smooth collaboration. Designed and optimized
+                            the database architecture and developed the full back-end system.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teammate 3 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="team-card-modern fade-in" style="animation-delay: 0.3s">
+                    <div class="team-card-header">
+                        <img src="/img/avatar-placeholder.svg" class="team-avatar" alt="">
+                        <div class="team-role-badge bg-info">Backend & DevOps</div>
+                    </div>
+                    <div class="team-card-body">
+                        <h5 class="team-name">Teammate 3</h5>
+                        <p class="team-role">Backend Developer & DevOps Engineer</p>
+                        <p class="team-description">
+                            Developed the automated sensor monitoring and alerting system, admin dashboard for real-time sensor status tracking, error logging infrastructure, and user authentication system. Also handled Linux server setup, deployment pipelines, and infrastructure design ensuring stable production environment.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teammate 4 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="team-card-modern fade-in" style="animation-delay: 0.4s">
+                    <div class="team-card-header">
+                        <img src="/img/avatar-placeholder.svg" class="team-avatar" alt="">
+                        <div class="team-role-badge bg-info">Full-Stack & Data</div>
+                    </div>
+                    <div class="team-card-body">
+                        <h5 class="team-name">Teammate 4</h5>
+                        <p class="team-role">Linux Server & Deployment</p>
+                        <p class="team-description">
+                            Collaborated on the website's user interface and spearheaded the data analysis module. Transformed raw sensor data into interactive charts to provide actionable user insights. Also managed comprehensive project documentation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teammate 5 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="team-card-modern fade-in" style="animation-delay: 0.5s">
+                    <div class="team-card-header">
+                        <img src="/img/avatar-placeholder.svg" class="team-avatar" alt="">
+                        <div class="team-role-badge bg-info">DevOps</div>
+                    </div>
+                    <div class="team-card-body">
+                        <h5 class="team-name">Teammate 5</h5>
+                        <p class="team-role">Linux Server & Deployment</p>
+                        <p class="team-description">
+                            Contributed to Linux server infrastructure, deployment automation, and
+                            backend connectivity solutions.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slogan Section -->
+    <section class="container py-5">
+        <div class="slogan-card fade-in">
+            <div class="slogan-icon">
+                <i class="bi bi-quote"></i>
+            </div>
+            <h3 class="slogan-title">Our Vision</h3>
+            <p class="slogan-text">"Guided by Wisdom, Parked in Seconds."</p>
+            <p class="slogan-subtitle">Making urban parking smarter, faster, and stress-free for everyone.</p>
+        </div>
+    </section>
+</main>
+
+<div th:replace="fragments/nav :: modals"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
