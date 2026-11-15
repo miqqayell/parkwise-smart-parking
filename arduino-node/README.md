@@ -28,21 +28,19 @@ to a Spring Boot backend over WiFi.
 
 ## Configuration
 
-Edit `include/config.h`:
+Edit `include/config.h` before uploading:
 
 ```cpp
 #define WIFI_SSID      "YOUR_WIFI_SSID"
 #define WIFI_PASSWORD  "YOUR_WIFI_PASSWORD"
 
-#define SERVER_HOST    "parkwise.local"
-#define SERVER_PORT    8080
-#define SERVER_PATH    "/api/sensor-readings"
-
-#define SENSOR_ID      "vlx-node-1"
-#define SPOT_ID        "P1"
+#define SERVER_HOST    "parkwise.local"   // IP or hostname of the ingest server
+#define SERVER_PORT    5051
+#define SERVER_PATH    "/ingest"
 ```
 
-Change `SERVER_HOST` to the IP or hostname where your Spring Boot application runs.
+Pins, the 50 cm distance threshold and the measurement interval are also set there.
+Do not commit real WiFi credentials.
 
 ## JSON payload
 
@@ -58,35 +56,11 @@ The Arduino sends a JSON body like:
 }
 ```
 
-Your Spring Boot controller can accept this payload and store it in the database.
-
-## Spring Boot example
-
-```java
-public record SensorReadingDto(
-    String sensorId,
-    String spotId,
-    int distanceMm,
-    boolean metal,
-    boolean occupied
-) {}
-
-@RestController
-@RequestMapping("/api/sensor-readings")
-public class SensorReadingController {
-
-    @PostMapping
-    public ResponseEntity<Void> ingest(@RequestBody SensorReadingDto dto) {
-        // TODO: save to database
-        System.out.println("Received: " + dto);
-        return ResponseEntity.ok().build();
-    }
-}
-```
+On the server, readings were saved as JSON files that the data collector picks up over SFTP.
 
 ## Building with PlatformIO
 
-1. Open this folder with VS Code + PlatformIO.
+1. Open this folder with VS Code + PlatformIO (or run `pio run` from the command line).
 2. Run **Build**.
 3. Connect your Arduino UNO R4 WiFi.
 4. Run **Upload**.
