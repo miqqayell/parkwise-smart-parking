@@ -41,8 +41,7 @@ def predict_all(data: PredictRequest):
             "day_of_week": day_of_week,
             "time_of_day": data.time_of_day,
             "temperature_c": temperature_c,
-            "rainfall_mm": rainfall_mm,
-            "humidity_pct": humidity_pct,
+            "precipitation_mm": rainfall_mm,  # the model was trained on this column name
             "wind_speed_kmh": wind_speed_kmh
         }
 
