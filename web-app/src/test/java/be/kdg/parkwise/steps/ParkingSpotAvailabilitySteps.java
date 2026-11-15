@@ -32,6 +32,7 @@ public class ParkingSpotAvailabilitySteps {
     @Autowired private ParkingSpotRepo parkingSpotRepo;
     @Autowired private SensorRepo sensorRepo;
     @Autowired private SensorReadingRepo sensorReadingRepo;
+    @Autowired private SensorAlertRepo sensorAlertRepo;
 
     private ParkingArea area;
     private ParkingSpot spot;
@@ -45,13 +46,16 @@ public class ParkingSpotAvailabilitySteps {
 
     @Given("the parking database is clean")
     public void the_parking_database_is_clean() {
-        // Delete in dependency order (readings -> sensors -> spots -> areas)
+        // Delete in dependency order (alerts/readings -> sensors -> spots -> areas).
+        // Alerts are created in the background by the sensor monitor.
+        sensorAlertRepo.deleteAll();
         sensorReadingRepo.deleteAll();
         sensorRepo.deleteAll();
         parkingSpotRepo.deleteAll();
         parkingAreaRepo.deleteAll();
 
         // Make sure deletes are applied now
+        sensorAlertRepo.flush();
         sensorReadingRepo.flush();
         sensorRepo.flush();
         parkingSpotRepo.flush();
