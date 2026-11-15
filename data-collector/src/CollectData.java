@@ -35,7 +35,7 @@ public class CollectData {
     private static long SENSOR_ID = -1;
 
     // CHANGE THIS VALUE to move your sensor to another spot dynamically
-    private static long DESIRED_SPOT_ID = 4;
+    private static long DESIRED_SPOT_ID = Long.parseLong(env("SPOT_ID", "4"));
 
     public static void main(String[] args) {
         Timer timer = new Timer();
