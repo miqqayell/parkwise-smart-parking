@@ -156,3 +156,15 @@ COMMENT ON TABLE user_subscription IS 'Records user subscriptions with snapshot 
 COMMENT ON COLUMN user_subscription.locked_price IS 'Price locked at subscription time - protects user from future price changes';
 COMMENT ON COLUMN user_subscription.locked_plan_name IS 'Plan name locked at subscription time';
 COMMENT ON COLUMN user_subscription.locked_plan_code IS 'Plan code locked for feature access logic';
+
+-- ===========================================
+-- ANALYTICS CACHE (written by analytics-ml/analytics_ai_service.py,
+-- read by the web app's analytics page)
+-- ===========================================
+CREATE TABLE IF NOT EXISTS analytics_cache (
+    chart_name   TEXT PRIMARY KEY,
+    chart_image  TEXT NOT NULL,          -- data:image/png;base64,...
+    chart_data   TEXT,                   -- JSON
+    metadata     TEXT,                   -- JSON
+    generated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
